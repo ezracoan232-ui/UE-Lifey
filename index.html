@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<link rel="manifest" href="manifest.json">
+    <title>UE Life Interface - Smart Engineering Hub</title>
+    <style>
+        body {
+            margin: 0; padding: 0; background-color: #0f1115;
+            font-family: monospace; color: #f0f2f5;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .ue-navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            background-color: #181b22; border-bottom: 1px solid #262b36;
+            padding: 0 24px; height: 60px; flex-shrink: 0;
+        }
+        .logo-text { color: #4286f5; font-size: 24px; font-weight: bold; }
+        .workspace { display: flex; flex: 1; overflow: hidden; }
+        .panel-left {
+            width: 400px; border-right: 1px solid #262b36;
+            background-color: #181b22; padding: 24px;
+            display: flex; flex-direction: column; box-sizing: border-box;
+        }
+        textarea {
+            background-color: #0f1115; border: 1px solid #262b36; border-radius: 6px;
+            color: #f0f2f5; padding: 12px; font-size: 14px; height: 150px; resize: none; outline: none;
+            font-family: inherit; margin-bottom: 15px; margin-top: 5px;
+        }
+        .action-btn {
+            background-color: #4286f5; color: white; border: none;
+            padding: 12px 16px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer;
+        }
+        .panel-right { flex: 1; display: flex; flex-direction: column; background-color: #0f1115; }
+        .code-window { flex: 2; display: flex; flex-direction: column; border-bottom: 1px solid #262b36; }
+        .window-header {
+            background-color: #181b22; padding: 8px 16px; font-size: 12px; color: #8b949e;
+        }
+        .code-display {
+            margin: 0; padding: 20px; font-size: 14px; color: #a5d6ff; background-color: #0d1117;
+            flex: 1; white-space: pre-wrap; overflow-y: auto;
+        }
+        .terminal-window { flex: 1; display: flex; flex-direction: column; background-color: #05070a; }
+        .terminal-output { padding: 16px; font-size: 13px; color: #39ff14; flex: 1; overflow-y: auto; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <nav class="ue-navbar">
+        <div class="logo-text">UE Life <span style="font-size:12px; background:rgba(66,134,245,0.2); padding:3px 6px; border-radius:4px; margin-left:10px;">ENGINE PIPELINE</span></div>
+    </nav>
+
+    <div class="workspace">
+        <div class="panel-left">
+            <label style="font-size: 12px; color: #8b949e; font-weight:bold;">ENTER SYSTEM COMPONENT INSTRUCTIONS:</label>
+            <!-- Fixed: Removed default text and added a clean placeholder background reminder text instead -->
+            <textarea id="promptInput" placeholder="Describe your hardware task naturally here..."></textarea>
+            <button id="generateBtn" class="action-btn" onclick="processHardwareCommand()">Generate Firmware Architecture</button>
+        </div>
+
+        <div class="panel-right">
+            <div class="code-window">
+                <div class="window-header">UE_Life_Modular_Firmware.ino / OUTPUT CODE BLOCK</div>
+                <pre id="codeDisplay" class="code-display">// Enter custom hardware definitions to view live C++ structure mapping...</pre>
+            </div>
+            <div class="terminal-window">
+                <div class="window-header">Debug Monitor Log Stream (Serial Monitor Output)</div>
+                <div id="terminalOutput" class="terminal-output">
+                    [SYSTEM] UE Life Interface kernel initialized.<br>[SYSTEM] Legacy processing core active. Waiting for inputs.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logToTerminal(message, isSys, isErr) {
+            var term = document.getElementById('terminalOutput');
+            var timestamp = new Date().toLocaleTimeString();
+            var hexColor = "#39ff14"; // Green
+            if (isSys) { hexColor = "#4286f5"; } // Blue
+            if (isErr) { hexColor = "#ef4444"; } // Red
+            term.innerHTML = term.innerHTML + "<br><span style='color:" + hexColor + "'>[" + timestamp + "] " + message + "</span>";
+            term.scrollTop = term.scrollHeight;
+        }
+
+        function processHardwareCommand() {
+            try {
+                var textInput = document.getElementById('promptInput').value;
+                var cleanText = textInput.toLowerCase();
+                var displayBox = document.getElementById('codeDisplay');
+
+                logToTerminal("Analyzing text string inputs...", true, false);
+
+                var num1 = 56;
+                var num2 = 57;
+                var numberMatches = cleanText.match(/\d+/g);
+                
+                if (numberMatches) {
+                    if (numberMatches.length > 0) { num1 = parseInt(numberMatches[0], 10); }
+                    if (numberMatches.length > 1) { num2 = parseInt(numberMatches[1], 10); }
+                }
+
+                var builtCode = "";
+
+                if (cleanText.indexOf("servo") !== -1 || cleanText.indexOf("motor") !== -1 || cleanText.indexOf("spin") !== -1 || cleanText.indexOf("turn") !== -1 || cleanText.indexOf("gear") !== -1) {
+                    logToTerminal("Target category identified: [SERVO_MOTOR]", true, false);
+                    
+                    var leftDegrees = Math.round(180 * (num1 / 100));
+                    var rightDegrees = Math.round(180 * ((100 - num2) / 100));
+
+                    builtCode = "#include &lt;Servo.h&gt;\n\n" +
+                                "Servo myServo;\n\n" +
+                                "void setup() {\n" +
+                                "  myServo.attach(9); // Digital PWM pin assignment\n" +
+                                "}\n\n" +
+                                "void loop() {\n" +
+                                "  myServo.write(" + leftDegrees + "); // Left position at " + num1 + "%\n" +
+                                "  delay(1200);\n" +
+                                "  myServo.write(" + rightDegrees + "); // Right position at " + num2 + "%\n" +
+                                "  delay(1200);\n" +
+                                "}";
+                } 
+                else if (cleanText.indexOf("lcd") !== -1 || cleanText.indexOf("screen") !== -1 || cleanText.indexOf("display") !== -1 || cleanText.indexOf("print") !== -1) {
+                    logToTerminal("Target category identified: [LCD_DISPLAY]", true, false);
+                    
+                    var msg = "UE Life Active";
+                    var quoteMatches = textInput.match(/"([^"]+)"/);
+                    if (quoteMatches) { if (quoteMatches.length > 1) { msg = quoteMatches[1]; } }
+
+                    builtCode = "#include &lt;Wire.h&gt;\n" +
+                                "#include &lt;LiquidCrystal_I2C.h&gt;\n\n" +
+                                "LiquidCrystal_I2C lcd(0x27, 16, 2);\n\n" +
+                                "void setup() {\n" +
+                                "  lcd.init();\n" +
+                                "  lcd.backlight();\n" +
+                                "  lcd.setCursor(0, 0);\n" +
+                                "  lcd.print(\"" + msg + "\");\n" +
+                                "}\n\n" +
+                                "void loop() {\n" +
+                                "}";
+                } 
+                else {
+                    logToTerminal("Generic prompt input detected. Generating default LED timing sketch.", true, false);
+                    builtCode = "void setup() {\n" +
+                                "  pinMode(13, OUTPUT); // Onboard LED indicator\n" +
+                                "}\n\n" +
+                                "void loop() {\n" +
+                                "  digitalWrite(13, HIGH);\n" +
+                                "  delay(" + num1 + ");\n" +
+                                "  digitalWrite(13, LOW);\n" +
+                                "  delay(" + num1 + ");\n" +
+                                "}";
+                }
+
+                displayBox.innerHTML = builtCode;
+                logToTerminal("SUCCESS: C++ Arduino software blueprint generated.", false, false);
+
+            } catch (err) {
+                logToTerminal("FATAL EXECUTION FAULT: " + err.message, false, true);
+                document.getElementById('codeDisplay').innerHTML = "// Internal script failure: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
